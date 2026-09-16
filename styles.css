@@ -118,3 +118,36 @@ th { color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacin
   .bonus-grid { grid-template-columns:1fr; }
   .scorer-list { grid-template-columns:1fr; }
 }
+
+/* Supabase / authentification */
+.loading-screen { min-height:100vh; display:grid; place-items:center; color:var(--muted); font-weight:700; }
+.auth-page { min-height:100vh; display:grid; place-items:center; padding:24px; background:linear-gradient(145deg,#0f3d2e 0%,#174f3d 45%,#f4f7f5 45%); }
+.auth-card { width:min(480px,100%); background:#fff; border:1px solid var(--border); border-radius:24px; box-shadow:0 24px 70px rgba(0,0,0,.18); padding:28px; }
+.auth-logo { width:58px; height:58px; border-radius:18px; display:grid; place-items:center; background:var(--primary); color:#fff; font-size:28px; margin-bottom:16px; }
+.auth-card h1 { margin:0 0 6px; font-size:30px; }
+.auth-card .field { margin-top:14px; }
+.auth-actions { display:grid; gap:10px; margin-top:18px; }
+.auth-switch { margin-top:16px; text-align:center; color:var(--muted); }
+.link-btn { border:0; background:none; color:var(--primary); font-weight:800; padding:4px; }
+.error-box { margin-top:14px; padding:11px 13px; border-radius:12px; background:#faeaea; border:1px solid #edbcbc; color:#7d2929; }
+.success-box { margin-top:14px; padding:11px 13px; border-radius:12px; background:#e8f5ed; border:1px solid #b8dec6; color:#245b38; }
+.user-meta { display:flex; align-items:center; gap:8px; }
+.user-name { font-weight:800; }
+.user-role { font-size:12px; color:var(--muted); }
+.empty-state { text-align:center; padding:30px 14px; color:var(--muted); }
+.round-select { min-width:190px; }
+.badge-admin { display:inline-flex; padding:3px 7px; border-radius:999px; background:#fff3c9; color:#69510b; font-size:11px; font-weight:800; }
+.inline-form { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; align-items:end; }
+.inline-form.three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.inline-form.two { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.stack { display:grid; gap:12px; }
+.match-admin-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.small-note { font-size:12px; color:var(--muted); }
+.topbar-actions { display:flex; align-items:center; gap:10px; margin-left:auto; }
+.mobile-nav { display:none; }
+@media (max-width:840px) {
+  .inline-form,.inline-form.three,.inline-form.two,.match-admin-grid { grid-template-columns:1fr; }
+  .user-meta { width:100%; justify-content:space-between; }
+  .topbar-actions { width:100%; justify-content:space-between; margin-left:0; }
+  .round-select { width:100%; }
+}

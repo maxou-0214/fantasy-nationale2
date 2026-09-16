@@ -1,33 +1,36 @@
-# Fantasy Nationale 2 Rugby — V1
+# Fantasy Nationale 2 — V2 Supabase
 
-Prototype web/PWA fonctionnel, sans dépendances ni compilation.
+Cette version remplace les faux utilisateurs et le stockage local des pronostics par Supabase.
 
-## Lancer localement
-Ouvre un terminal dans ce dossier puis :
+## Déploiement GitHub Pages
 
-```bash
-python -m http.server 8080
-```
+1. Remplacer les fichiers de l'ancien dépôt par le contenu de ce dossier.
+2. Conserver `index.html` à la racine du dépôt.
+3. Commit / Push sur `main`.
+4. GitHub Pages redéploie automatiquement le site.
+5. Sur iPhone, si une ancienne version apparaît encore, fermer le site, vider les données Safari du site ou attendre le rafraîchissement du service worker puis recharger.
 
-Puis ouvre `http://localhost:8080` dans ton navigateur.
+## Supabase déjà requis
 
-> Évite d'ouvrir directement `index.html` en `file://` car le service worker PWA nécessite HTTP/HTTPS.
+- Tables du fichier `supabase-schema.sql` de la V1.
+- RLS installé.
+- Trigger `private.handle_new_user()` installé.
+- Authentication Email activée.
+- Site URL / Redirect URL configurées vers l'URL GitHub Pages.
 
-## Déployer sur GitHub Pages
-1. Crée un dépôt GitHub.
-2. Mets tous les fichiers de ce dossier à la racine du dépôt.
-3. Dans **Settings > Pages**, choisis **Deploy from a branch**.
-4. Sélectionne la branche `main` et le dossier `/ (root)`.
-5. GitHub affichera ensuite l'URL publique.
+## Ce que fait cette V2
 
-## Tester la V1
-- Le profil `Max` a les droits admin.
-- Utilise le sélecteur utilisateur en haut à droite pour simuler plusieurs joueurs.
-- Fais les pronostics dans `Pronostics`.
-- Dans `Admin`, renseigne les résultats, bonus réels et marqueurs.
-- Va dans `Classement` : les points sont recalculés automatiquement.
+- Inscription email + mot de passe + pseudo.
+- Confirmation email compatible avec l'URL GitHub Pages.
+- Connexion persistante sur le navigateur.
+- Profil et rôle admin lus depuis `profiles`.
+- Équipes, joueurs, journées et matchs lus depuis Supabase.
+- Pronostics enregistrés dans `match_predictions`.
+- 3 marqueurs enregistrés dans `try_predictions`.
+- Résultats et marqueurs réels saisis par l'admin.
+- Calcul des scores dans `round_scores`.
+- Classement général partagé entre tous les utilisateurs.
 
-## Important
-Les données sont actuellement enregistrées dans le `localStorage` du navigateur. Cela permet de tester toute la logique sans backend, mais **les données ne sont pas partagées entre plusieurs téléphones/ordinateurs**.
+## Sécurité
 
-Pour la vraie fantasy multijoueur, utilise `supabase-schema.sql`, Supabase Auth et des politiques RLS. Voir `ARCHITECTURE.md`.
+`config.js` contient uniquement la Project URL et la Publishable Key. Elles sont faites pour être utilisées côté navigateur. Ne jamais ajouter une secret key ou une `service_role` key dans ce dépôt.
