@@ -1,0 +1,38 @@
+name: Synchronisation résultats FFR
+
+on:
+  schedule:
+    - cron: '0 20 * * 0'
+      timezone: 'Europe/Paris'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ffr-results-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Installer les dépendances
+        run: npm install --omit=dev --no-audit --no-fund
+
+      - name: Synchroniser les résultats FFR vers Supabase
+        env:
+          SUPABASE_URL: 'https://kdrosiitwuvwqbtnrsvb.supabase.co'
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          FFR_CALENDAR_URL: 'https://monclubhouse.ffr.fr/nationales/nationale-2/qualification-50110/72955/calendrier-resultats'
+        run: npm run sync:ffr
