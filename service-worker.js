@@ -1,4 +1,4 @@
-const CACHE = 'fantasy-n2-v2-supabase-cache-v1';
+const CACHE = 'fantasy-n2-v4-auto-bd-cache-v1';
 const ASSETS = ['./','./index.html','./styles.css','./app.js','./config.js','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install', event => {
   self.skipWaiting();

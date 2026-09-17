@@ -34,3 +34,22 @@ Cette version remplace les faux utilisateurs et le stockage local des pronostics
 ## Sécurité
 
 `config.js` contient uniquement la Project URL et la Publishable Key. Elles sont faites pour être utilisées côté navigateur. Ne jamais ajouter une secret key ou une `service_role` key dans ce dépôt.
+
+## V3 — bonus défensif automatique
+
+Avant de publier cette version, exécuter `upgrade-defensive-bonus.sql` dans Supabase > SQL Editor.
+
+L'administrateur saisit ensuite uniquement les deux scores. La base calcule automatiquement :
+- le résultat réel (domicile / nul / extérieur) ;
+- le bonus défensif de l'équipe perdante si l'écart est <= 7 points ;
+- aucun bonus défensif en cas de nul ou de défaite de plus de 7 points.
+
+Les bonus offensifs restent saisis manuellement.
+
+## Synchronisation automatique FFR (V4)
+
+La V4 ajoute `.github/workflows/ffr-sync.yml` et `scripts/sync-ffr.mjs`.
+Le workflow s'exécute chaque dimanche à 20h (Europe/Paris) et met à jour les résultats depuis Mon Club House FFR.
+
+Avant le premier lancement, crée dans GitHub Actions le secret `SUPABASE_SECRET_KEY` avec une clé Supabase `sb_secret_...`.
+Voir `AUTOMATISATION-FFR.md` pour les étapes détaillées.

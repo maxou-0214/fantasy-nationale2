@@ -40,6 +40,8 @@ create table public.matches (
   home_team_id uuid not null references public.teams(id),
   away_team_id uuid not null references public.teams(id),
   kickoff_at timestamptz,
+  home_score integer check (home_score is null or home_score >= 0),
+  away_score integer check (away_score is null or away_score >= 0),
   actual_result text check (actual_result in ('home','draw','away')),
   home_offensive_bonus boolean not null default false,
   home_defensive_bonus boolean not null default false,

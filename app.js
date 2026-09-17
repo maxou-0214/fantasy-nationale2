@@ -389,9 +389,22 @@ function adminView() {
 function adminMatchCard(m) {
   const matchPlayers = state.players.filter(p => p.team_id===m.home_team_id || p.team_id===m.away_team_id);
   const scorerIds = new Set(state.actualScorers.filter(x=>x.match_id===m.id).map(x=>x.player_id));
-  return `<div class="card" style="margin-bottom:14px"><h3>${esc(team(m.home_team_id)?.name)} — ${esc(team(m.away_team_id)?.name)}</h3><div class="match-admin-grid"><div class="field"><label>Résultat réel</label><select onchange="adminSetResult('${m.id}',this.value)"><option value="">Non renseigné</option><option value="home" ${m.actual_result==='home'?'selected':''}>Victoire ${esc(team(m.home_team_id)?.name)}</option><option value="draw" ${m.actual_result==='draw'?'selected':''}>Nul</option><option value="away" ${m.actual_result==='away'?'selected':''}>Victoire ${esc(team(m.away_team_id)?.name)}</option></select></div><div><label style="font-weight:750">Bonus obtenus</label><div class="bonus-grid">${[
-    ['home_offensive_bonus',`BO ${team(m.home_team_id)?.name}`],['home_defensive_bonus',`BD ${team(m.home_team_id)?.name}`],['away_offensive_bonus',`BO ${team(m.away_team_id)?.name}`],['away_defensive_bonus',`BD ${team(m.away_team_id)?.name}`]
-  ].map(([f,l])=>`<label class="check"><input type="checkbox" ${m[f]?'checked':''} onchange="adminSetBonus('${m.id}','${f}',this.checked)">${esc(l)}</label>`).join('')}</div></div></div><div class="separator"></div><strong>Marqueurs réels</strong><div class="scorer-list" style="margin-top:10px">${matchPlayers.map(p=>`<button class="scorer ${scorerIds.has(p.id)?'selected':''}" onclick="adminToggleScorer('${m.id}','${p.id}')"><strong>${esc(playerName(p))}</strong><span>${esc(team(p.team_id)?.name)}</span></button>`).join('')}</div></div>`;
+  const scoreReady = Number.isInteger(m.home_score) && Number.isInteger(m.away_score);
+  const resultLabel = scoreReady ? resultText(m.actual_result, m) : '—';
+  const homeBD = m.home_defensive_bonus ? 'Oui (+3 si pronostiqué)' : 'Non';
+  const awayBD = m.away_defensive_bonus ? 'Oui (+3 si pronostiqué)' : 'Non';
+  return `<div class="card" style="margin-bottom:14px"><h3>${esc(team(m.home_team_id)?.name)} — ${esc(team(m.away_team_id)?.name)}</h3>
+  <form class="inline-form" onsubmit="adminSetScore(event,'${m.id}')">
+    <div class="field"><label>Score ${esc(team(m.home_team_id)?.name)}</label><input class="input" name="home_score" type="number" min="0" step="1" value="${m.home_score ?? ''}" required></div>
+    <div class="field"><label>Score ${esc(team(m.away_team_id)?.name)}</label><input class="input" name="away_score" type="number" min="0" step="1" value="${m.away_score ?? ''}" required></div>
+    <button class="btn" type="submit">Enregistrer le score</button>
+  </form>
+  <div class="notice" style="margin-top:12px"><strong>Résultat calculé :</strong> ${esc(resultLabel)}<br><span class="muted">Le bonus défensif est automatique pour l'équipe perdante si l'écart est inférieur ou égal à 7 points.</span></div>
+  <div class="match-admin-grid" style="margin-top:12px"><div><label style="font-weight:750">Bonus offensifs</label><div class="bonus-grid">${[
+    ['home_offensive_bonus',`BO ${team(m.home_team_id)?.name}`],['away_offensive_bonus',`BO ${team(m.away_team_id)?.name}`]
+  ].map(([f,l])=>`<label class="check"><input type="checkbox" ${m[f]?'checked':''} onchange="adminSetBonus('${m.id}','${f}',this.checked)">${esc(l)}</label>`).join('')}</div></div>
+  <div><label style="font-weight:750">Bonus défensifs automatiques</label><div class="breakdown"><span class="pill">BD ${esc(team(m.home_team_id)?.name)} : ${esc(homeBD)}</span><span class="pill">BD ${esc(team(m.away_team_id)?.name)} : ${esc(awayBD)}</span></div></div></div>
+  <div class="separator"></div><strong>Marqueurs réels</strong><div class="scorer-list" style="margin-top:10px">${matchPlayers.map(p=>`<button class="scorer ${scorerIds.has(p.id)?'selected':''}" onclick="adminToggleScorer('${m.id}','${p.id}')"><strong>${esc(playerName(p))}</strong><span>${esc(team(p.team_id)?.name)}</span></button>`).join('')}</div></div>`;
 }
 
 async function adminAddTeam(e) {
@@ -421,8 +434,18 @@ async function adminAddMatch(e) {
   await queryOrThrow(db.from('matches').insert({round_id:ui.selectedRoundId,home_team_id:home,away_team_id:away,kickoff_at:fd.get('kickoff_at')?new Date(fd.get('kickoff_at')).toISOString():null}));
   e.currentTarget.reset(); await loadCoreData(); await loadRoundData();
 }
-async function adminSetResult(matchId,value) {
-  await queryOrThrow(db.from('matches').update({actual_result:value||null}).eq('id',matchId)); await loadCoreData(); await loadRoundData();
+async function adminSetScore(event,matchId) {
+  event.preventDefault();
+  const fd = new FormData(event.currentTarget);
+  const homeScore = Number(fd.get('home_score'));
+  const awayScore = Number(fd.get('away_score'));
+  if (!Number.isInteger(homeScore) || homeScore < 0 || !Number.isInteger(awayScore) || awayScore < 0) {
+    alert('Renseigne deux scores entiers positifs ou nuls.');
+    return;
+  }
+  await queryOrThrow(db.from('matches').update({home_score:homeScore,away_score:awayScore}).eq('id',matchId));
+  await loadCoreData();
+  await loadRoundData();
 }
 async function adminSetBonus(matchId,field,value) {
   await queryOrThrow(db.from('matches').update({[field]:value}).eq('id',matchId)); await loadCoreData(); await loadRoundData();
@@ -472,7 +495,7 @@ function render() {
 
 function switchAuth(mode){ui.authMode=mode;ui.authError='';ui.authMessage='';render();}
 
-Object.assign(window,{setView,setRound,login,signup,logout,switchAuth,saveResult,saveBonus,toggleTryPick,adminAddTeam,adminAddPlayer,adminAddRound,adminUpdateRound,adminAddMatch,adminSetResult,adminSetBonus,adminToggleScorer,adminCalculateScores});
+Object.assign(window,{setView,setRound,login,signup,logout,switchAuth,saveResult,saveBonus,toggleTryPick,adminAddTeam,adminAddPlayer,adminAddRound,adminUpdateRound,adminAddMatch,adminSetScore,adminSetBonus,adminToggleScorer,adminCalculateScores});
 
 if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(console.warn));
 init().catch(err=>{console.error(err);document.getElementById('app').innerHTML=`<div class="auth-page"><div class="auth-card"><h1>Erreur de démarrage</h1><div class="error-box">${esc(err.message||err)}</div></div></div>`;});
